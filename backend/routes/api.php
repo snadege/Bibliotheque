@@ -31,6 +31,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/my-list/{bookId}', [ReadingListController::class, 'store']);
     Route::delete('/my-list/{bookId}', [ReadingListController::class, 'destroy']);
 
+    // Routes POST complémentaires pour prendre en charge l'emprunt depuis le frontend
+    Route::post('/borrowings', [ReadingListController::class, 'store']);
+    Route::post('/borrowings/{bookId}', [ReadingListController::class, 'store']);
+
     // --- ESPACE ADMIN ---
     // Dashboard Stats & Historique Global des Emprunts
     Route::get('/admin/stats', [AdminController::class, 'stats']);
