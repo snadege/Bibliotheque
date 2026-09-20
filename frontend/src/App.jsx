@@ -1,8 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import NavigationBar from './components/Navbar';
+import PrivateRoute from './components/PrivateRoute';
+
 import Footer from './components/Footer';
 import Home from './pages/Home';
+import Catalog from './pages/Catalog';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -20,15 +23,23 @@ function App() {
           <NavigationBar />
           <main className="flex-grow-1">
             <Routes>
+              {/* Routes publiques */}
               <Route path="/" element={<Home />} />
+              <Route path="/catalog" element={<Catalog />}/>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/books/:id" element={<BookDetail />} />
-              <Route path="/my-list" element={<MyList />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/categories" element={<CategoriesManager />} />
-              <Route path="/admin/users" element={<UsersManager />} />
               
+              {/* Routes protégées pour utilisateurs connectés */}
+              <Route element={<PrivateRoute />}>
+                <Route path="/my-list" element={<MyList />} />
+              </Route>
+
+              <Route element={<PrivateRoute adminOnly={true}/>}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/categories" element={<CategoriesManager />} />
+                <Route path="/admin/users" element={<UsersManager />} />
+              </Route>
             </Routes>
           </main>
 

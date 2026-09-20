@@ -12,21 +12,50 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Erreur lecture données utilisateur local', e);
+      }
     }
     setLoading(false);
   }, [token]);
 
+  // Inscription
+  const register = async (name, email, password, passwordConfirmation) => {
+    const response = await API.post('/register', {
+      name,
+      email,
+      password,
+      password_confirmation: passwordConfirmation,
+    });
+
+    const userToken = response.data.access_token || response.data.token;
+    const userData = response.data.user;
+
+    if (userToken) {
+      localStorage.setItem('token', userToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setToken(userToken);
+      setUser(userData);
+    }
+
+    return response.data;
+  };
+
   // Connexion
   const login = async (email, password) => {
     const response = await API.post('/login', { email, password });
-    const { token: userToken, user: userData } = response.data;
+    const userToken = response.data.access_token || response.data.token;
+    const userData = response.data.user;
 
-    localStorage.setItem('token', userToken);
-    localStorage.setItem('user', JSON.stringify(userData));
+    if (userToken) {
+      localStorage.setItem('token', userToken);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setToken(userToken);
+      setUser(userData);
+    }
 
-    setToken(userToken);
-    setUser(userData);
     return response.data;
   };
 
@@ -45,7 +74,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, register, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

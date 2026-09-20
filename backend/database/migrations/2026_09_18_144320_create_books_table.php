@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('description');
             $table->string('cover_image')->nullable();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
+            $table->integer('available_copies')->default(5);
             $table->timestamps();
         });
     }

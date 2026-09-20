@@ -8,8 +8,8 @@ const NavigationBar = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
@@ -26,7 +26,7 @@ const NavigationBar = () => {
 
         <Navbar.Collapse id="navbar-nav">
           <Nav className="me-auto ms-lg-4">
-            <Nav.Link as={Link} to="/" className="fw-medium text-dark">
+            <Nav.Link as={Link} to="/catalog" className="fw-medium text-dark">
               Catalogue
             </Nav.Link>
             

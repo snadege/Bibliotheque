@@ -6,7 +6,10 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BookController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ReadingListController;
+use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\UserController;
 
+// Routes publiques
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -14,23 +17,39 @@ Route::get('/books', [BookController::class, 'index']);
 Route::get('/books/{id}', [BookController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 
+// Routes protégées par authentification Sanctum
 Route::middleware('auth:sanctum')->group(function () {
     
-    // Déconnexion
+    // Déconnexion & Utilisateur courant
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 
-    // Gestion de la liste de lecture (Membres)
+    // --- ESPACE MEMBRE : Mes Emprunts personnels ---
     Route::get('/my-list', [ReadingListController::class, 'index']);
     Route::post('/my-list/{bookId}', [ReadingListController::class, 'store']);
     Route::delete('/my-list/{bookId}', [ReadingListController::class, 'destroy']);
 
-    // Gestion des livres et catégories (Espace Admin)
+    // --- ESPACE ADMIN ---
+    // Dashboard Stats & Historique Global des Emprunts
+    Route::get('/admin/stats', [AdminController::class, 'stats']);
+    Route::get('/borrowings', [ReadingListController::class, 'adminIndex']); // Historique global pour React Admin
+
+    // Gestion des Utilisateurs (Supporte à la fois /users et /admin/users selon l'appel de React)
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/admin/users', [UserController::class, 'index']);
+    Route::put('/users/{id}', [UserController::class, 'update']);
+    Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+    // Gestion CRUD des Livres (Admin)
     Route::post('/books', [BookController::class, 'store']);
     Route::put('/books/{id}', [BookController::class, 'update']);
     Route::delete('/books/{id}', [BookController::class, 'destroy']);
-    Route::post('/categories', [CategoryController::class, 'store']);
-});
 
-//Route::get('/user', function (Request $request) {
-    //return $request->user();
-//})->middleware('auth:sanctum');
+    // Gestion CRUD des Catégories (Admin)
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+    
+});

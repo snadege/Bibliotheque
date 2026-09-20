@@ -24,9 +24,17 @@ const Login = () => {
       navigate('/');
     } catch (err) {
       console.error(err);
-      setError(
-        err.response?.data?.message || 'Identifiants invalides ou problème de connexion au serveur.'
-      );
+
+      if (err.response?.data?.errors) {
+        // Extraction des erreurs de validation
+        const messages = Object.values(err.response.data.errors).flat().join(' ');
+        setError(messages);
+      } else {
+        setError(
+          err.response?.data?.message || 'Identifiants invalides ou problème de connexion au serveur.'
+        );
+      }
+      
     } finally {
       setLoading(false);
     }

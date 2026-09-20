@@ -18,7 +18,8 @@ const MyList = () => {
 
   const fetchMyBorrowings = async () => {
     try {
-      const response = await API.get('/my-borrowings');
+      // 1. Utilisation du bon endpoint déclarant la liste (/borrowings ou /my-list)
+      const response = await API.get('/borrowings');
       const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
       setBorrowings(data);
     } catch (error) {
@@ -29,13 +30,14 @@ const MyList = () => {
     }
   };
 
-  const handleReturn = async (borrowingId) => {
-    setReturningId(borrowingId);
+  const handleReturn = async (bookId) => {
+    setReturningId(bookId);
     setMessage({ type: '', text: '' });
 
     try {
-      await API.post(`/borrowings/${borrowingId}/return`);
-      setMessage({ type: 'success', text: 'Livre retourné avec succès !' });
+      // 2. Utilisation de la suppression/retour par ID du livre
+      await API.delete(`/my-list/${bookId}`);
+      setMessage({ type: 'success', text: 'Livre retiré / retourné avec succès !' });
       fetchMyBorrowings();
     } catch (error) {
       console.error(error);
@@ -81,7 +83,7 @@ const MyList = () => {
             <AlertCircle size={48} className="text-muted mb-3" />
             <h5 className="fw-bold">Aucun emprunt en cours</h5>
             <p className="text-muted">Vous n'avez pas encore emprunté d'ouvrage dans la bibliothèque.</p>
-            <Button as={Link} to="/" variant="success" className="mt-2 d-inline-flex align-items-center gap-2">
+            <Button as={Link} to="/books" variant="success" className="mt-2 d-inline-flex align-items-center gap-2">
               <BookOpen size={16} /> Explorer le catalogue
             </Button>
           </Card.Body>
@@ -93,7 +95,6 @@ const MyList = () => {
               <tr>
                 <th className="py-3 ps-4">Livre</th>
                 <th className="py-3">Auteur</th>
-                <th className="py-3">Date d'emprunt</th>
                 <th className="py-3">Statut</th>
                 <th className="py-3 text-end pe-4">Action</th>
               </tr>
@@ -101,34 +102,27 @@ const MyList = () => {
             <tbody>
               {borrowings.map((item) => (
                 <tr key={item.id}>
-                  <td className="ps-4 fw-medium text-dark">{item.book?.title || 'Titre inconnu'}</td>
-                  <td className="text-muted">{item.book?.author || '-'}</td>
-                  <td>{item.borrowed_at ? new Date(item.borrowed_at).toLocaleDateString('fr-FR') : '-'}</td>
+                  <td className="ps-4 fw-medium text-dark">{item.title || 'Titre inconnu'}</td>
+                  <td className="text-muted">{item.author || '-'}</td>
                   <td>
-                    {item.returned_at ? (
-                      <Badge bg="secondary">Retourné</Badge>
-                    ) : (
-                      <Badge bg="success">En cours</Badge>
-                    )}
+                    <Badge bg="success">En cours</Badge>
                   </td>
                   <td className="text-end pe-4">
-                    {!item.returned_at && (
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        disabled={returningId === item.id}
-                        onClick={() => handleReturn(item.id)}
-                        className="d-inline-flex align-items-center gap-1"
-                      >
-                        {returningId === item.id ? (
-                          <Spinner animation="border" size="sm" />
-                        ) : (
-                          <>
-                            <RotateCcw size={14} /> Retourner
-                          </>
-                        )}
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      disabled={returningId === item.id}
+                      onClick={() => handleReturn(item.id)}
+                      className="d-inline-flex align-items-center gap-1"
+                    >
+                      {returningId === item.id ? (
+                        <Spinner animation="border" size="sm" />
+                      ) : (
+                        <>
+                          <RotateCcw size={14} /> Rendre l'ouvrage
+                        </>
+                      )}
+                    </Button>
                   </td>
                 </tr>
               ))}

@@ -28,15 +28,22 @@ const Register = () => {
     setLoading(true);
 
     try {
-      await register(name, email, password, passwordConfirmation);
-      navigate('/');
+        await register(name, email, password, passwordConfirmation);
+        navigate('/');
     } catch (err) {
-      console.error(err);
-      setError(
-        err.response?.data?.message || 'Erreur lors de l\'inscription. Veuillez réessayer.'
-      );
+        console.error(err);
+        
+        if (err.response?.data?.errors) {
+            // Combine tous les messages d'erreur de Laravel en une seule chaîne
+            const messages = Object.values(err.response.data.errors).flat().join(' ');
+            setError(messages);
+        } else {
+            setError(
+            err.response?.data?.message || "Erreur lors de l'inscription. Veuillez réessayer."
+            );
+        } 
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 

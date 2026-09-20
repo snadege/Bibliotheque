@@ -1,7 +1,7 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Badge, Button, Spinner, Alert } from 'react-bootstrap';
-import { ArrowLeft, BookOpen, Tag, CheckCircle2, XCircle, Calendar, BookmarkCheck } from 'lucide-react';
+import { ArrowLeft, BookOpen, Tag, CheckCircle2, XCircle, BookmarkCheck } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import API from '../services/api';
 
@@ -15,11 +15,8 @@ const BookDetail = () => {
   const [borrowing, setBorrowing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  useEffect(() => {
-    fetchBookDetails();
-  }, [id]);
-
-  const fetchBookDetails = async () => {
+  // Encapsulation dans useCallback pour sécuriser la dépendance du useEffect
+  const fetchBookDetails = useCallback(async () => {
     try {
       const response = await API.get(`/books/${id}`);
       setBook(response.data?.data || response.data);
@@ -29,31 +26,37 @@ const BookDetail = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchBookDetails();
+  }, [fetchBookDetails]);
 
   const handleBorrow = async () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+  if (!user) {
+    navigate('/login');
+    return;
+  }
 
-    setBorrowing(true);
-    setMessage({ type: '', text: '' });
+  setBorrowing(true);
+  setMessage({ type: '', text: '' });
 
-    try {
-      await API.post(`/borrowings`, { book_id: id });
-      setMessage({ type: 'success', text: 'Livre emprunté avec succès ! Consultez votre espace membre.' });
-      fetchBookDetails();
-    } catch (error) {
-      console.error(error);
-      setMessage({
-        type: 'danger',
-        text: error.response?.data?.message || 'Erreur lors de la réservation du livre.'
-      });
-    } finally {
-      setBorrowing(false);
-    }
-  };
+  try {
+    const response = await API.post('/borrowings', { book_id: id });
+    setMessage({ type: 'success', text: response.data.message || 'Livre emprunté avec succès !' });
+    
+    // Recharger les données du livre pour mettre à jour l'affichage du stock
+    fetchBookDetails();
+  } catch (error) {
+    console.error(error);
+    setMessage({
+      type: 'danger',
+      text: error.response?.data?.message || 'Erreur lors de la réservation du livre.'
+    });
+  } finally {
+    setBorrowing(false);
+  }
+};
 
   if (loading) {
     return (
@@ -79,7 +82,7 @@ const BookDetail = () => {
     <Container className="py-5">
       {/* Bouton Retour */}
       <div className="mb-4">
-        <Link to="/" className="text-decoration-none text-muted d-inline-flex align-items-center gap-1 fw-medium">
+        <Link to="/catalog" className="text-decoration-none text-muted d-inline-flex align-items-center gap-1 fw-medium">
           <ArrowLeft size={18} /> Retour au catalogue
         </Link>
       </div>

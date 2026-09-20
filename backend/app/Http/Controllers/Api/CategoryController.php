@@ -19,25 +19,61 @@ class CategoryController extends Controller
         ], 200);
     }
 
-    /**
-     * Ajouter une nouvelle catégorie (Espace Admin)
-     */
     public function store(Request $request)
     {
-        // 1. Validation des données envoyées
-        $fields = $request->validate([
-            'label' => 'required|string|max:100|unique:categories,label',
+        $validated = $request->validate([
+            'label' => 'required|string|max:255',
         ]);
 
-        // 2. Création de la catégorie avec génération automatique du slug
         $category = Category::create([
-            'label' => $fields['label'],
-            'slug'  => Str::slug($fields['label']), // Ex: "Science Fiction" -> "science-fiction"
+            'label' => $validated['label'],
+            'slug'  => Str::slug($validated['label']),
         ]);
 
         return response()->json([
-            'message' => 'Catégorie créée avec succès',
+            'status'  => true,
+            'message' => 'Catégorie créée avec succès.',
             'data'    => $category
         ], 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Catégorie introuvable.'], 404);
+        }
+
+        $validated = $request->validate([
+            'label' => 'required|string|max:255',
+        ]);
+
+        $category->update([
+            'label' => $validated['label'],
+            'slug'  => Str::slug($validated['label']),
+        ]);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Catégorie mise à jour avec succès.',
+            'data'    => $category
+        ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Catégorie introuvable.'], 404);
+        }
+
+        $category->delete();
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Catégorie supprimée avec succès.'
+        ], 200);
     }
 }

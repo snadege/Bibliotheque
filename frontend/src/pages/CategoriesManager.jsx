@@ -11,8 +11,7 @@ const CategoriesManager = () => {
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  const [label, setLabel] = useState('');
 
   useEffect(() => {
     fetchCategories();
@@ -35,12 +34,10 @@ const CategoriesManager = () => {
   const handleOpenModal = (category = null) => {
     if (category) {
       setEditingCategory(category);
-      setName(category.name || '');
-      setDescription(category.description || '');
+      setLabel(category.label || '');
     } else {
       setEditingCategory(null);
-      setName('');
-      setDescription('');
+      setLabel('');
     }
     setShowModal(true);
   };
@@ -48,11 +45,13 @@ const CategoriesManager = () => {
   const handleSaveCategory = async (e) => {
     e.preventDefault();
     try {
+      const payload = { label };
+
       if (editingCategory) {
-        await API.put(`/categories/${editingCategory.id}`, { name, description });
+        await API.put(`/categories/${editingCategory.id}`, payload);
         setMessage({ type: 'success', text: 'Catégorie mise à jour avec succès !' });
       } else {
-        await API.post('/categories', { name, description });
+        await API.post('/categories', payload);
         setMessage({ type: 'success', text: 'Catégorie ajoutée avec succès !' });
       }
       setShowModal(false);
@@ -139,15 +138,15 @@ const CategoriesManager = () => {
             <thead className="bg-light">
               <tr>
                 <th className="py-3 ps-4">Nom de la catégorie</th>
-                <th className="py-3">Description</th>
+                <th className="py-3">Slug (Identifiant URL)</th>
                 <th className="py-3 text-end pe-4">Actions</th>
               </tr>
             </thead>
             <tbody>
               {categories.map((cat) => (
                 <tr key={cat.id}>
-                  <td className="ps-4 fw-semibold text-dark">{cat.name}</td>
-                  <td className="text-muted">{cat.description || 'Aucune description'}</td>
+                  <td className="ps-4 fw-semibold text-dark">{cat.label}</td>
+                  <td><code>{cat.slug}</code></td>
                   <td className="text-end pe-4">
                     <Button
                       variant="outline-primary"
@@ -182,24 +181,13 @@ const CategoriesManager = () => {
           </Modal.Header>
           <Modal.Body className="p-4">
             <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Nom</Form.Label>
+              <Form.Label className="fw-medium">Nom de la catégorie</Form.Label>
               <Form.Control
                 type="text"
-                placeholder="ex: Science-Fiction, Histoire..."
+                placeholder="ex: Science-Fiction, Informatique..."
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-medium">Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                placeholder="Brève description de la catégorie (optionnel)"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
               />
             </Form.Group>
           </Modal.Body>

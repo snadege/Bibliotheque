@@ -10,7 +10,7 @@ class Category extends Model
     use HasFactory;
 
     // Champs autorisés pour l'insertion en masse
-    protected $fillable = ['label', 'slug'];
+    protected $fillable = ['name', 'label', 'description'];
 
     // Relation : Une catégorie possède plusieurs livres
     public function books()
