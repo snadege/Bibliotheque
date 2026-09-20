@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Instance Axios configurée vers le backend Laravel
+// Utilise la variable d'environnement si disponible, sinon l'URL de Render par défaut
 const API = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://bibliotheque-mp44.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
